@@ -11,5 +11,5 @@ endif()
 set(CMAKE_CC_FLAGS "-g -O3 -Wall -c -MMD -MP")
 include_directories($(RayTracing_SOURCE_DIR)/include)
 
-add_executable(rtSerial src/Main.cpp src/Math.cpp src/RayTracer.cpp)
+add_executable(rtSerial src/Main.cpp src/Math.cpp src/RayTracer.cpp src/Output.cpp)
 
