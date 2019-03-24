@@ -2,28 +2,8 @@
 #include <vector>
 
 #include "Sphere.h"
+#include "Output.h"
 #include "RayTracer.h"
-
-// Output as a ppm format
-void output(std::vector<std::vector<Vector3>> image)
-{
-    auto height = image.size();
-    if (height < 1)
-        return;
-    auto width = image[0].size();
-    std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
-    ofs << "P6\n" << width << " " << height << "\n255\n";
-    for (unsigned i = 0; i < height; ++i)
-    {
-        for (unsigned j = 0; j < width; ++j)
-        {
-            ofs << (unsigned char)(std::min(float(1), image[i][j].x) * 255) <<
-                   (unsigned char)(std::min(float(1), image[i][j].y) * 255) <<
-                   (unsigned char)(std::min(float(1), image[i][j].z) * 255);
-        }
-    }
-    ofs.close();
-}
 
 int main(int argc, char **argv)
 {
@@ -41,7 +21,7 @@ int main(int argc, char **argv)
     // light
     spheres.push_back(Sphere(Vector3( 0.0,     20, -30),     3, Vector3(0.00, 0.00, 0.00), 0, 0.0, Vector3(3,3,3)));
 
-    output(RayTracer::Render(spheres));
+    Output::OutputPPM(RayTracer::Render(spheres));
     
     return 0;
 }
