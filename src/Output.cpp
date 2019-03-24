@@ -9,7 +9,7 @@ void Output::OutputPPM(std::vector<std::vector<Vector3>> image)
     if (height < 1)
         return;
     auto width = image[0].size();
-    std::ofstream ofs("./build/untitled.ppm", std::ios::out | std::ios::binary);
+    std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
     ofs << "P6\n" << width << " " << height << "\n255\n";
     for (unsigned i = 0; i < height; ++i)
     {
