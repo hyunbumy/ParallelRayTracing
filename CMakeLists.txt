@@ -11,5 +11,6 @@ endif()
 set(CMAKE_CC_FLAGS "-g -O3 -Wall -c -MMD -MP")
 include_directories($(RayTracing_SOURCE_DIR)/include)
 
-add_executable(rtSerial src/Main.cpp src/Math.cpp src/RayTracer.cpp src/Output.cpp)
-
+add_executable(rtSerial src/serial/Main.cpp src/Math.cpp src/serial/RayTracer.cpp src/Output.cpp)
+# Need to compile using nvcc
+# add_executable(rtCuda src/cuda/Main.cpp src/cuda/cudaRT.cpp src/Math.cpp src/Output.cpp)
