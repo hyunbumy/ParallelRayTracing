@@ -3,12 +3,12 @@
 #include "Output.h"
 
 // Output as a ppm format
-void Output::OutputPPM(std::vector<std::vector<Vector3>> image)
+void Output::OutputPPM(std::vector<std::vector<Vector3> > image)
 {
-    auto height = image.size();
+    size_t height = image.size();
     if (height < 1)
         return;
-    auto width = image[0].size();
+    size_t width = image[0].size();
     std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
     ofs << "P6\n" << width << " " << height << "\n255\n";
     for (unsigned i = 0; i < height; ++i)
