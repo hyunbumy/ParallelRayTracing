@@ -1,24 +1,26 @@
 #pragma once
 
 #include "Math.h"
+#include "Object.h"
 
-class Sphere
+class Sphere : public Object
 {
 public:
     Vector3 center;                           /// position of the sphere
     float radius, radius2;                  /// sphere radius and radius^2
-    Vector3 surfaceColor, emissionColor;      /// surface color and emission (light)
-    float transparency, reflection;         /// surface transparency and reflectivity
     Sphere(
         const Vector3 &c,
         const float &r,
         const Vector3 &sc,
         const float &refl = 0,
         const float &transp = 0,
-        const Vector3 &ec = Vector3::Zero) :
-        center(c), radius(r), radius2(r * r), surfaceColor(sc), emissionColor(ec),
-        transparency(transp), reflection(refl)
+        const Vector3 &ec = Vector3::Zero) : Object(sc, refl, transp, ec), 
+        center(c), radius(r), radius2(r * r)
     { /* empty */ }
+
+    ~Sphere()
+    { /* empty */ }
+    
     //[comment]
     // Compute a ray-sphere intersection using the geometric solution
     //[/comment]
@@ -34,5 +36,9 @@ public:
         t1 = tca + thc;
         
         return true;
+    }
+
+    Vector3 calculateHit(const Vector3 &rayorig) const {
+        return rayorig - this->center;
     }
 };
