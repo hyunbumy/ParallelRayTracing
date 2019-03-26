@@ -97,25 +97,38 @@ float3 Trace(float3& rayorig, float3& raydir, CudaSphere* objects,
 }
 
 __global__
-void Render(float3* image, CudaSphere* spheres, int sphereSize,
+void Render(float3* image, CudaSphere* objects, int sphereSize,
             unsigned int width, unsigned int height)
 {
-    float3* pixel = image;
     float invWidth = 1 / float(width), invHeight = 1 / float(height);
     float fov = 30.0f, aspectRatio = width / float(height);
     float angle = tanf(M_PI * 0.5f * fov / 180.0f);
 
-    // Trace rays
-    for (unsigned y = 0; y < height; ++y) { 
-        for (unsigned x = 0; x < width; ++x, ++pixel) { 
-            float xx = (2 * ((x + 0.5f) * invWidth) - 1) * angle * aspectRatio; 
-            float yy = (1 - 2 * ((y + 0.5f) * invHeight)) * angle; 
-            float3 raydir = make_float3(xx, yy, -1); 
+    // Single GPU Thread
+    float3* pixel = image;
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x, ++pixel) {
+            float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectRatio;
+            float yy = (1 - 2 * ((y + 0.5) * invHeight)) * angle;
+            float3 raydir = make_float3(xx, yy, -1);
             normalize(raydir);
             float3 zero = make_float3(0,0,0);
-            *pixel = Trace(zero, raydir, spheres, sphereSize, 0); 
-        } 
+            *pixel = Trace(zero, raydir, objects, sphereSize, 0);
+        }
     }
+
+    // // Parallelization
+    // unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;   
+    // unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
+    // unsigned int i = (height - y - 1)*width + x; // index of current pixel (calculated using thread index) 
+
+    // // Trace rays
+    // float xx = (2 * ((x + 0.5f) * invWidth) - 1) * angle * aspectRatio; 
+    // float yy = (1 - 2 * ((y + 0.5f) * invHeight)) * angle; 
+    // float3 raydir = make_float3(xx, yy, -1); 
+    // normalize(raydir);
+    // float3 zero = make_float3(0,0,0);
+    // image[i] = Trace(zero, raydir, spheres, sphereSize, 0);
 }
 
 void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
@@ -134,7 +147,10 @@ void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
     dim3 grid(width / block.x, height / block.y, 1);
     
     // schedule threads on device and launch CUDA kernel from host
-    Render<<< grid, block >>>(output, spheres, 1, width, height);
+    // Render<<< grid, block >>>(output, spheres, 1, width, height);
+    
+    // Single GPU Thread
+    Render<<< 1, 1 >>>(output, spheres, 1, width, height);
 
     // Wait to synchronize
     cudaDeviceSynchronize();
