@@ -26,6 +26,7 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
+#include <omp.h>
 
 #include "RayTracer.h"
 
@@ -146,6 +147,9 @@ std::vector<std::vector<Vector3> > RayTracer::Render(const std::vector<Object*> 
     float fov = 30, aspectratio = width / float(height);
     float angle = tan(M_PI * 0.5 * fov / 180.);
     // Trace rays
+
+    omp_set_num_threads(8);
+    #pragma omp parallel for
     for (unsigned y = 0; y < height; ++y) {
         for (unsigned x = 0; x < width; ++x) {
 
