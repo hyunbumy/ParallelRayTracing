@@ -2,7 +2,7 @@ CUDA_INSTALL_PATH := /opt/cuda
 
 CXX := g++
 CC := gcc
-LINK := g++ -fPIC
+LINK := nvcc
 NVCC  := nvcc
 
 # Includes
@@ -10,7 +10,8 @@ INCLUDES = -I. -I$(CUDA_INSTALL_PATH)/include
 
 # Common flags
 COMMONFLAGS += $(INCLUDES)
-NVCCFLAGS += $(COMMONFLAGS)
+LINKFLAGS += -arch=sm_30
+NVCCFLAGS += -dc $(COMMONFLAGS) $(LINKFLAGS)
 CXXFLAGS += $(COMMONFLAGS)
 CFLAGS += $(COMMONFLAGS)
 
@@ -34,7 +35,7 @@ $(BUILDDIR)/%.cu.o: %.cu
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
 $(BUILDDIR)/%.cpp.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(NVCC) $(CXXFLAGS) -c $< -o $@
 
 $(BUILDDIR)/$(TARGET): $(OBJS) Makefile
 	$(LINKLINE)
