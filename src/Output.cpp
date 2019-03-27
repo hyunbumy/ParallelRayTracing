@@ -22,3 +22,20 @@ void Output::OutputPPM(std::vector<std::vector<Vector3> > image)
     }
     ofs.close();
 }
+
+void Output::OutputLog(std::vector<std::vector<Vector3> > image)
+{
+    size_t height = image.size();
+    if (height < 1)
+        return;
+    size_t width = image[0].size();
+    std::ofstream ofs("./log", std::ios::out | std::ios::binary);
+    for (unsigned i = 0; i < height; ++i)
+    {
+        for (unsigned j = 0; j < width; ++j)
+        {
+            ofs << image[i][j].x << " " << image[i][j].y << " " << image[i][j].z << std::endl;
+        }
+    }
+    ofs.close();
+}

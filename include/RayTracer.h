@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Sphere.h"
+#include "Object.h"
 #include "Math.h"
 
 class RayTracer
