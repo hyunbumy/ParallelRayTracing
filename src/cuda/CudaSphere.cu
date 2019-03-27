@@ -20,7 +20,7 @@ bool CudaSphere::Intersect(float3& rayorig, float3& raydir,
     if (tca < 0) return false;
     float d2 = dot(l, l) - tca * tca;
     if (d2 > radius2) return false;
-    float thc = sqrt(radius2 - d2);
+    float thc = sqrtf(radius2 - d2);
     t0 = tca - thc;
     t1 = tca + thc;
     
