@@ -1,4 +1,3 @@
-#include <cmath>
 #include <iostream>
 
 #include "CudaRT.h"
@@ -58,7 +57,7 @@ float3 Trace(float3& rayorig, float3& raydir, CudaSphere* objects,
             float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
             float cosi = -1 * dot(nhit, raydir);
             float k = 1 - eta * eta * (1 - cosi * cosi);
-            float3 refrdir = raydir * eta + nhit * (eta *  cosi - sqrt(k));
+            float3 refrdir = raydir * eta + nhit * (eta *  cosi - rsqrtf(k));
             refrdir = normalize(refrdir);
             refraction = Trace(reflOrig, refrdir, objects, objSize, depth + 1);
         }
@@ -86,7 +85,7 @@ float3 Trace(float3& rayorig, float3& raydir, CudaSphere* objects,
                     }
                 }
                 surfaceColor += object->surfaceColor * transmission *
-                max(float(0), dot(nhit, lightDirection)) * objects[i].emissionColor;
+                fmaxf(float(0), dot(nhit, lightDirection)) * objects[i].emissionColor;
             }
         }
     }
@@ -135,10 +134,14 @@ void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
     cudaMallocManaged(&output, width*height*sizeof(float3));
 
     CudaSphere* spheres;
-    int size = 2;
+    int size = 6;
     cudaMallocManaged(&spheres, size*sizeof(CudaSphere));
-    spheres[0] = CudaSphere(make_float3(0, 0, -20), 4.0f, make_float3(1.0f, 0.32f, 0.36f), 1, 0.5f);
-    spheres[1] = CudaSphere(make_float3(0.0f, 20, -30), 3, make_float3(0, 0, 0), 0, 0.0f, make_float3(3,3,3));
+    spheres[0] = CudaSphere(make_float3(0, -10004, -20), 10000, make_float3(0.2, 0.2, 0.2), 0, 0);
+    spheres[1] = CudaSphere(make_float3(0, 0, -20), 4.0f, make_float3(1.0f, 0.32f, 0.36f), 1, 0.5f);
+    spheres[2] = CudaSphere(make_float3(5, -1, -15), 2, make_float3(0.9, 0.76, 0.46), 1, 0.0);
+    spheres[3] = CudaSphere(make_float3(5, 0, -25), 3, make_float3(0.65, 0.77, 0.97), 1, 0.0);
+    spheres[4] = CudaSphere(make_float3(-5.5, 0, -15), 3, make_float3(0.9, 0.9, 0.9), 1, 0.0);
+    spheres[5] = CudaSphere(make_float3(0.0f, 20, -30), 3, make_float3(0, 0, 0), 0, 0.0f, make_float3(3,3,3));
 
     std::cout << "Memory allocated" << std::endl;
             
