@@ -138,25 +138,60 @@ Vector3 RayTracer::Trace(
 //[/comment]
 std::vector<std::vector<Vector3> > RayTracer::Render(const std::vector<Object*> &objects)
 {
-    unsigned width = 3840, height = 2160;
+    //unsigned width = 3280, height = 2160; 
+    unsigned width = 640, height = 480;
     std::vector<std::vector<Vector3> > image = std::vector<std::vector<Vector3> >(
         height, std::vector<Vector3>(width)
     );
     float invWidth = 1 / float(width), invHeight = 1 / float(height);
-    float fov = 30, aspectratio = width / float(height);
+    float fov = 50, aspectratio = width / float(height);
     float angle = tan(M_PI * 0.5 * fov / 180.);
+
+    Vector3 position(10, 30, 15); // 10, 30, 15
+    Vector3 direction(0.35, 1, 0); // 0.35, 1, 0
     // Trace rays
     for (unsigned y = 0; y < height; ++y) {
         for (unsigned x = 0; x < width; ++x) {
-
             //create primary ray
             float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectratio;
             float yy = (1 - 2 * ((y + 0.5) * invHeight)) * angle;
-            Vector3 raydir(xx, yy, -1);
+            float zz = -1;
+            Vector3 raydir(xx, yy, zz);
+            raydir = raydir-direction;
             raydir.Normalize();
+            //raydir = raydir * 0.5;
 
             //trace primary ray
-            image[y][x] = Trace(Vector3::Zero, raydir, objects, 0);
+            image[y][x] = Trace(position, raydir, objects, 0);
+        }
+    }
+    return image;
+}
+
+std::vector<std::vector<Vector3> > RayTracer::Render(Scene& scene) {
+//unsigned width = 3280, height = 2160; 
+    unsigned width = scene.cam.width, height = scene.cam.height;
+    std::vector<std::vector<Vector3> > image = std::vector<std::vector<Vector3> >(
+        height, std::vector<Vector3>(width)
+    );
+    float invWidth = 1 / float(width), invHeight = 1 / float(height);
+    float fov = scene.cam.fov, aspectratio = width / float(height);
+    float angle = tan(M_PI * 0.5 * fov / 180.);
+
+    // Trace rays
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
+            //create primary ray
+            float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectratio;
+            float yy = (1 - 2 * ((y + 0.5) * invHeight)) * angle;
+            float zz = -1;
+            Vector3 raydir(xx, yy, zz);
+            raydir = raydir - scene.cam.direction;
+            raydir.Normalize();
+            //raydir = raydir * 0.5;
+
+            //trace primary ray
+            image[y][x] = Trace(scene.cam.position, raydir, scene.Objects, 0);
         }
     }
     return image;
