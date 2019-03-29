@@ -1,29 +1,16 @@
-#include <iostream>
-
 #include "CudaRT.h"
-#include "CudaSphere.h"
-#include "helper_math.h"
-
-#define MAX_RAY_DEPTH 5
+#include "CudaCommon.h"
 
 __device__
 float3 Trace(float3& rayorig, float3& raydir, CudaSphere* objects, 
              int objSize, int depth)
 {
     //if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
-    float tnear = INFINITY;
-    const CudaSphere* object = nullptr;
     // find intersection of this ray with the sphere in the scene
-    for (unsigned i = 0; i < objSize; ++i) {
-        float t0 = INFINITY, t1 = INFINITY;
-        if (objects[i].Intersect(rayorig, raydir, t0, t1)) {
-            if (t0 < 0) t0 = t1;
-            if (t0 < tnear) {
-                tnear = t0;
-                object = &objects[i];
-            }
-        }
-    }
+    float tnear = INFINITY;
+    const CudaSphere* object = GetClosestObject(rayorig, raydir, tnear,
+                                                objects, objSize);
+    
     // if there's no intersection return black or background color
     if (object == nullptr) return make_float3(2, 2, 2);
     float3 surfaceColor = make_float3(0,0,0); // color of the ray/surfaceof the object intersected by the ray
@@ -41,6 +28,7 @@ float3 Trace(float3& rayorig, float3& raydir, CudaSphere* objects,
         nhit *= -1;
         inside = true;
     }
+
     if ((object->transparency > 0 || object->reflection > 0) && depth < MAX_RAY_DEPTH) {
         float facingratio = -1 * dot(raydir, nhit);
         // change the mix value to tweak the effect
@@ -99,7 +87,7 @@ void Render(float3* image, CudaSphere* objects, int objectSize,
 {
     float invWidth = 1 / float(width), invHeight = 1 / float(height);
     float fov = 30, aspectRatio = width / float(height);
-    float angle = tan(M_PI * 0.5 * fov / 180.);
+    float angle = tanf(M_PI * 0.5 * fov / 180.);
 
     // // Single GPU Thread
     // float3* pixel = image;
@@ -131,17 +119,17 @@ void Render(float3* image, CudaSphere* objects, int objectSize,
 void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
 {
     float3* output;    // pointer to memory for image on the device (GPU VRAM)
-    cudaMallocManaged(&output, width*height*sizeof(float3));
+    checkCudaErrors(cudaMallocManaged(&output, width*height*sizeof(float3)));
 
     CudaSphere* spheres;
     int size = 6;
-    cudaMallocManaged(&spheres, size*sizeof(CudaSphere));
+    checkCudaErrors(cudaMallocManaged(&spheres, size*sizeof(CudaSphere)));
     spheres[0] = CudaSphere(make_float3(0, -10004, -20), 10000, make_float3(0.2, 0.2, 0.2), 0, 0);
-    spheres[1] = CudaSphere(make_float3(0, 0, -20), 4.0f, make_float3(1.0f, 0.32f, 0.36f), 1, 0.5f);
+    spheres[1] = CudaSphere(make_float3(0, 0, -20), 4.0, make_float3(1.0, 0.32, 0.36), 1, 0.5);
     spheres[2] = CudaSphere(make_float3(5, -1, -15), 2, make_float3(0.9, 0.76, 0.46), 1, 0.0);
     spheres[3] = CudaSphere(make_float3(5, 0, -25), 3, make_float3(0.65, 0.77, 0.97), 1, 0.0);
     spheres[4] = CudaSphere(make_float3(-5.5, 0, -15), 3, make_float3(0.9, 0.9, 0.9), 1, 0.0);
-    spheres[5] = CudaSphere(make_float3(0.0f, 20, -30), 3, make_float3(0, 0, 0), 0, 0.0f, make_float3(3,3,3));
+    spheres[5] = CudaSphere(make_float3(0.0, 20, -30), 3, make_float3(0, 0, 0), 0, 0.0f, make_float3(3,3,3));
 
     std::cout << "Memory allocated" << std::endl;
             
@@ -156,7 +144,7 @@ void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
     // Render<<< 1, 1 >>>(output, spheres, size, width, height);
 
     // Wait to synchronize
-    cudaDeviceSynchronize();
+    checkCudaErrors(cudaDeviceSynchronize());
     std::cout << "Finish synchronization" << std::endl;
 
     // Copy results back
@@ -168,6 +156,6 @@ void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
     }
 
     // free CUDA memory
-    cudaFree(output);
-    cudaFree(spheres);
+    checkCudaErrors(cudaFree(output));
+    checkCudaErrors(cudaFree(spheres));
 }

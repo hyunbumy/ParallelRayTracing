@@ -31,12 +31,12 @@ int main(int argc, char **argv)
     
     auto output = RayTracer::Render(scene);
 
-    Output::OutputLog(output);
-    Output::OutputPPM(output);
-
     if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}   
     time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
     cout << "Execution Time: " << time << endl;
+
+    Output::OutputLog(output);
+    Output::OutputPPM(output);
     
     return 0;
 }

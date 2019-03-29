@@ -18,8 +18,8 @@ Scene::Scene(std::string filename) {
     // light
     Objects.push_back(new Sphere(Vector3( 0.0,     20, -30),     3, Vector3(0.00, 0.00, 0.00), 0, 0.0, Vector3(3,3,3)));
 
-    //cam = Camera(Vector3(10, 30, 15), Vector3(0.35, 1, 0), 50, 640, 480);
-    cam = Camera(Vector3(0, 20, 30), Vector3(0, 0.3, 0), 50, 640, 480);
+    // cam = Camera(Vector3(10, 30, 15), Vector3(0.35, 1, 0), 50, 640, 480);
+    cam = Camera(Vector3(0, 0, 0), Vector3(0, 0, 0), 30, 640, 480);
 }
 
 Scene::~Scene() {

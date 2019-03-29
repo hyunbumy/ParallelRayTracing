@@ -1,4 +1,7 @@
 CUDA_INSTALL_PATH := /opt/cuda
+ifeq ($(HOSTNAME), hpc-login3)
+	CUDA_INSTALL_PATH = /usr/usc/cuda/9.2
+endif
 
 CXX := g++
 CC := gcc
@@ -11,15 +14,18 @@ INCLUDES = -I. -I$(CUDA_INSTALL_PATH)/include
 # Common flags
 COMMONFLAGS += $(INCLUDES)
 LINKFLAGS += -arch=sm_30
-NVCCFLAGS += -dc $(COMMONFLAGS) $(LINKFLAGS)
+ifeq ($(HOSTNAME), hpc-login3)
+	LINKFLAGS = -arch=sm_60
+endif
+NVCCFLAGS += -std=c++11 -dc $(COMMONFLAGS) $(LINKFLAGS)
 CXXFLAGS += $(COMMONFLAGS)
 CFLAGS += $(COMMONFLAGS)
 
 LIB_CUDA := -L$(CUDA_INSTALL_PATH)/lib64 -lcudart
 BUILDDIR = build
-OBJS = $(BUILDDIR)/CudaRT.cu.o $(BUILDDIR)/CudaSphere.cu.o $(BUILDDIR)/Main.cpp.o
+OBJS = $(BUILDDIR)/CudaRT.cu.o $(BUILDDIR)/CudaSphere.cu.o $(BUILDDIR)/Main.cpp.o $(BUILDDIR)/CudaRTIter.cu.o
 TARGET = main
-LINKLINE = $(LINK) -o $(BUILDDIR)/$(TARGET) $(OBJS) $(LIB_CUDA)
+LINKLINE = $(LINK) $(LINKFLAGS) -o $(BUILDDIR)/$(TARGET) $(OBJS) $(LIB_CUDA)
 
 .SUFFIXES: .c .cpp .cu .o
 

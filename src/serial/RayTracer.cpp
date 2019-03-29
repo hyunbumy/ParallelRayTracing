@@ -101,9 +101,10 @@ Vector3 RayTracer::Trace(
             refraction = Trace(phit - nhit * bias, refrdir, objects, depth + 1);
         }
         // the result is a mix of reflection and refraction (if the sphere is transparent)
-        surfaceColor = (
-            reflection * fresneleffect +
-            refraction * (1 - fresneleffect) * object->transparency) * object->surfaceColor;
+        surfaceColor = 
+            (reflection * fresneleffect * object->surfaceColor) +
+            (refraction * (1 - fresneleffect) * object->transparency * object->surfaceColor);
+        return surfaceColor;
     }
     else {
         // it's a diffuse object, no need to raytrace any further
@@ -126,9 +127,8 @@ Vector3 RayTracer::Trace(
                 std::max(float(0), Vector3::Dot(nhit, lightDirection)) * objects[i]->emissionColor;
             }
         }
+        return surfaceColor + object->emissionColor;
     }
-    
-    return surfaceColor + object->emissionColor;
 }
 
 //[comment]
