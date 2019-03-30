@@ -33,28 +33,23 @@ int main()
     struct timespec start, stop; 
     double time;
 
-    unsigned width = 3280, height = 2160;
+    unsigned width = 3840, height = 2160;
 
     // Allocate image buffer
     float3* image = new float3[width*height];
 
-    // Run GPU Ray Tracer
-    // std::cout << "Start GPU" << std::endl;
-    // CudaRT::RenderWrapper(image, width, height);
-    // std::cout << "Finish GPU" << std::endl;
+    std::cout << "Start GPU RT" << std::endl;
+    if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
 
-    // OutputPPM(image, width, height);
-    // OutputLog(image, width, height);
-    // std::cout << "Outputed" << std::endl;
+    // Run GPU Ray Tracer
+    CudaRT::RenderWrapper(image, width, height);
+    std::cout << "Finish GPU" << std::endl;
 
     // Run GPU Iterative RT
-    std::cout << "Start Iterative RT" << std::endl;
-    if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
-    
     // Iterative CUDA kernel
-    CudaRTIter rt(width, height);
-    rt.RenderWrapper(image);
-    std::cout << "Finish Iterative RT" << std::endl;
+    // CudaRTIter rt(width, height);
+    // rt.RenderWrapper(image);
+    // std::cout << "Finish Iterative RT" << std::endl;
 
     if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}   
     time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
@@ -62,6 +57,7 @@ int main()
     
     OutputPPM(image, width, height);
     // OutputLog(image, width, height);
+    std::cout << "Output Finisehd" << std::endl;
 
     delete image;
 

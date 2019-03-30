@@ -8,6 +8,7 @@ public:
     float3* mLayers;
     float3* mDirections;
     float3* mBases;
+    float3* mCoefficients;
     CudaRTIter(unsigned width, unsigned height);
     ~CudaRTIter();
     void RenderWrapper(float3* image);

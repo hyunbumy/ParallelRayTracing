@@ -1,5 +1,7 @@
 #include "CudaRTIter.h"
 
+#define MAX_TREE_SIZE 31
+
 __device__
 unsigned GetCurrentIndex(unsigned width, unsigned height)
 {
@@ -9,13 +11,26 @@ unsigned GetCurrentIndex(unsigned width, unsigned height)
 }
 
 __device__
-float3 Trace(float3& direction, float3& base, unsigned depth,
+float3 Trace(unsigned currInd, unsigned krInd, unsigned ktInd, 
+             float3* directions, float3* bases, 
+             float3* coefficients, unsigned depth,
              CudaSphere* objects, int objSize)
 {
-    // Ray Tracing finished
-    if (direction.x == INFINITY && direction.y == INFINITY && direction.z == INFINITY)
+    auto direction = directions[currInd];
+    auto base = bases[currInd];
+    auto coefficient = coefficients[currInd];
+
+    // Default to no secondary rays
+    if (depth < MAX_RAY_DEPTH-1)
     {
-        return make_float3(INFINITY,INFINITY,INFINITY);
+        coefficients[krInd] = make_float3(0,0,0);
+        coefficients[ktInd] = make_float3(0,0,0);
+    }
+
+    // Ray Tracing finished
+    if (coefficient.x == 0 && coefficient.y == 0 && coefficient.z == 0)
+    {
+        return make_float3(0,0,0);
     }
 
     // Get Intersection
@@ -25,8 +40,7 @@ float3 Trace(float3& direction, float3& base, unsigned depth,
     );
     if (object == nullptr)
     {
-        direction = make_float3(INFINITY, INFINITY, INFINITY);
-        return make_float3(2,2,2);
+        return make_float3(2,2,2)*coefficient;
     }
 
     float3 phit = base + direction * tnear;
@@ -51,10 +65,28 @@ float3 Trace(float3& direction, float3& base, unsigned depth,
         // compute reflection direction
         float3 reflDir = direction - nhit * 2 * dot(direction, nhit);
 
-        // Update next ray
-        base = intersection;
-        direction = normalize(reflDir);
-        return object->surfaceColor * fresnelEffect;
+        // Update reflection ray
+        bases[krInd] = intersection;
+        directions[krInd] = normalize(reflDir);
+        coefficients[krInd] = object->surfaceColor * fresnelEffect * coefficient;
+
+        // Check refraction
+        if (object->transparency)
+        {
+            float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
+            float cosi = -1 * dot(nhit, direction);
+            float k = 1 - eta * eta * (1 - cosi * cosi);
+            float3 refrDir = direction * eta + nhit * (eta *  cosi - sqrtf(k));
+            
+            // Update refraction ray
+            intersection = phit - nhit * bias;
+            bases[ktInd] = intersection;
+            directions[ktInd] = normalize(refrDir);
+            coefficients[ktInd] = object->surfaceColor * (1-fresnelEffect) *
+                                  coefficient * object->transparency;
+        }
+
+        return make_float3(0,0,0);
     }
 
     // Diffuse object, compute illumination
@@ -85,12 +117,11 @@ float3 Trace(float3& direction, float3& base, unsigned depth,
     }
 
     // If diffuse object, stop ray tracing
-    direction = make_float3(INFINITY, INFINITY, INFINITY);
-    return surfaceColor + object->emissionColor;
+    return (surfaceColor + object->emissionColor)*coefficient;
 }
 
 __global__
-void Initialize(float3* directions, float3* bases, 
+void Initialize(float3* coefficients, float3* directions, float3* bases, 
                 unsigned width, unsigned height)
 {
     unsigned x = blockIdx.x*blockDim.x + threadIdx.x;
@@ -109,17 +140,31 @@ void Initialize(float3* directions, float3* bases,
 
     // Bases
     bases[i] = make_float3(0,0,0);
+
+    // Coeficients
+    coefficients[i] = make_float3(1,1,1);
 }
 
 __global__
-void Render(float3* layers, unsigned depth, float3* directions, float3* bases, 
-            CudaSphere* objects, int objSize, unsigned width, unsigned height)
+void Render(float3* layers, unsigned depth,
+            float3* coefficients, float3* directions, float3* bases,
+            CudaSphere* objects, int objSize,
+            unsigned width, unsigned height)
 {
     unsigned i = GetCurrentIndex(width, height);
 
-    layers[i+width*height*depth] = Trace(
-        directions[i], bases[i], depth, objects, objSize
-    );
+    unsigned start = powf(2, depth);
+    unsigned end = start * 2 - 1;
+    --start;
+    for (int index = start; index < end; ++index)
+    {
+        unsigned currInd = i + width*height*index;
+        unsigned krInd = i + width*height*(2*index+1);
+        unsigned ktInd = i + width*height*(2*index+2);
+        layers[currInd] = Trace(
+            currInd, krInd, ktInd, directions, bases, coefficients, depth, objects, objSize
+        );
+    }
 }
 
 __global__
@@ -127,11 +172,13 @@ void Reassemble(float3* layers, unsigned depth,
                 unsigned width, unsigned height)
 {
     unsigned i = GetCurrentIndex(width, height);
-    float3 top = layers[i+width*height*depth];
-    
-    if (top.x != INFINITY)
+
+    unsigned start = powf(2, depth);
+    unsigned end = start * 2 - 1;
+    --start;
+    for (int index = start; index < end; ++index)
     {
-        layers[i+width*height*(depth-1)] = top*layers[i+width*height*(depth-1)];
+        layers[i] += layers[i+width*height*index];
     }
 }
 
@@ -140,15 +187,18 @@ CudaRTIter::CudaRTIter(unsigned width, unsigned height)
     ,mHeight(height)
 {
     checkCudaErrors(
-        cudaMalloc(&mLayers, MAX_RAY_DEPTH*width*height*sizeof(float3))
+        cudaMalloc(&mLayers, MAX_TREE_SIZE*width*height*sizeof(float3))
     );
 
     checkCudaErrors(
-        cudaMalloc(&mDirections, width*height*sizeof(float3))
+        cudaMalloc(&mDirections, MAX_TREE_SIZE*width*height*sizeof(float3))
     );
 
     checkCudaErrors(
-        cudaMalloc(&mBases, width*height*sizeof(float3))
+        cudaMalloc(&mBases, MAX_TREE_SIZE*width*height*sizeof(float3))
+    );
+    checkCudaErrors(
+        cudaMalloc(&mCoefficients, MAX_TREE_SIZE*width*height*sizeof(float3))
     );
 }
 
@@ -158,6 +208,7 @@ CudaRTIter::~CudaRTIter()
     checkCudaErrors(cudaFree(mLayers));
     checkCudaErrors(cudaFree(mDirections));
     checkCudaErrors(cudaFree(mBases));
+    checkCudaErrors(cudaFree(mCoefficients));
 }
 
 void CudaRTIter::RenderWrapper(float3* image)
@@ -178,25 +229,26 @@ void CudaRTIter::RenderWrapper(float3* image)
 
     std::cout << "Initialize" << std::endl;
     // schedule threads on device and launch CUDA kernel from host
-    Initialize<<< grid, block >>>(mDirections, mBases, mWidth, mHeight);
+    Initialize<<< grid, block >>>(mCoefficients, mDirections, mBases, mWidth, mHeight);
     checkCudaErrors(cudaDeviceSynchronize());
 
     // Iterate MAX_RAY_DEPTH times
     std::cout << "Trace" << std::endl;
     for (unsigned depth = 0; depth < MAX_RAY_DEPTH; ++depth)
     {
-        Render<<< grid, block >>>(mLayers, depth, mDirections, mBases,
+        Render<<< grid, block >>>(mLayers, depth, 
+                                  mCoefficients, mDirections, mBases,
                                   spheres, size, mWidth, mHeight);
-        checkCudaErrors(cudaDeviceSynchronize());
     }
+    checkCudaErrors(cudaDeviceSynchronize());
 
     // Reassemble image
     std::cout << "Assemble" << std::endl;
     for (unsigned depth = MAX_RAY_DEPTH - 1; depth > 0; --depth)
     {
         Reassemble<<< grid, block >>>(mLayers, depth, mWidth, mHeight);
-        checkCudaErrors(cudaDeviceSynchronize());
     }
+    checkCudaErrors(cudaDeviceSynchronize());
 
     // Copy results back
     std::cout << "Output" << std::endl;

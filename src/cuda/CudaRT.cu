@@ -1,5 +1,4 @@
 #include "CudaRT.h"
-#include "CudaCommon.h"
 
 __device__
 float3 Trace(float3& rayorig, float3& raydir, CudaSphere* objects, 
@@ -45,8 +44,9 @@ float3 Trace(float3& rayorig, float3& raydir, CudaSphere* objects,
             float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
             float cosi = -1 * dot(nhit, raydir);
             float k = 1 - eta * eta * (1 - cosi * cosi);
-            float3 refrdir = raydir * eta + nhit * (eta *  cosi - rsqrtf(k));
+            float3 refrdir = raydir * eta + nhit * (eta *  cosi - sqrtf(k));
             refrdir = normalize(refrdir);
+            reflOrig = phit - nhit * bias;
             refraction = Trace(reflOrig, refrdir, objects, objSize, depth + 1);
         }
         // the result is a mix of reflection and refraction (if the sphere is transparent)
@@ -116,10 +116,10 @@ void Render(float3* image, CudaSphere* objects, int objectSize,
     image[i] = Trace(zero, raydir, objects, objectSize, 0);
 }
 
-void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
+void CudaRT::RenderWrapper(float3* image, unsigned width, unsigned height)
 {
     float3* output;    // pointer to memory for image on the device (GPU VRAM)
-    checkCudaErrors(cudaMallocManaged(&output, width*height*sizeof(float3)));
+    checkCudaErrors(cudaMalloc(&output, width*height*sizeof(float3)));
 
     CudaSphere* spheres;
     int size = 6;
@@ -148,12 +148,7 @@ void CudaRT::RenderWrapper(float* image, unsigned width, unsigned height)
     std::cout << "Finish synchronization" << std::endl;
 
     // Copy results back
-    for (int i = 0; i < width*height; ++i)
-    {
-        image[i*3] = output[i].x;
-        image[i*3+1] = output[i].y;
-        image[i*3+2] = output[i].z;
-    }
+    cudaMemcpy(image, output, width*height*sizeof(float3), cudaMemcpyDeviceToHost);
 
     // free CUDA memory
     checkCudaErrors(cudaFree(output));
