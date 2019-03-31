@@ -4,7 +4,7 @@
 #include <string>
 
 #include "Object.h"
-#include "Math.h"
+#include "Resources.h"
 
 class Camera {
 public:

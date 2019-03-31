@@ -5,7 +5,7 @@
 #include "Scene.h"    
 #include "Sphere.h"
 #include "Camera.h"
-#include "Math.h"
+#include "Resources.h"
 
 using namespace std;
 

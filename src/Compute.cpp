@@ -1,4 +1,4 @@
-#include "Math.h"
+#include "Resources.h"
 
 const Vector3 Vector3::Zero(0.0f, 0.0f, 0.f);
 const Vector3 Vector3::UnitX(1.0f, 0.0f, 0.0f);

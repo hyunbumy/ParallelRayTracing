@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Object.h"
-#include "Math.h"
+#include "Resources.h"
 #include "Scene.h"
 
 class RayTracer

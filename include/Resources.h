@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <cmath>
+#include <math.h>
 #include <memory.h>
 #include <limits>
 
