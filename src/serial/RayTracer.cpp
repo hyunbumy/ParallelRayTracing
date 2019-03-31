@@ -66,6 +66,7 @@ Vector3 RayTracer::Trace(
     }
     // if there's no intersection return black or background color
     if (!object) return Vector3(2, 2, 2);
+    
     Vector3 surfaceColor = Vector3::Zero; // color of the ray/surfaceof the object intersected by the ray
     Vector3 phit = rayorig + raydir * tnear; // point of intersection
     Vector3 nhit = object->calculateHit(phit); // normal at the intersection point
