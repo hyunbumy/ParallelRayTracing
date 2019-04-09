@@ -3,18 +3,21 @@
 #include <mpi.h>
 #include <stddef.h>
 #include <math.h>
+#include <vector>
+#include <iostream>
 
 #include "Resources.h"
+#include "Scene.h"
+#include "RayTracer.h"
 
-typedef class car_s {
-public:
-    int shifts;
-    int topSpeed;
-} car;
+using namespace std;
 
 int main(int argc, char **argv) {
+    struct timespec start, stop; 
+    double time;
 
-    const int tag = 13;
+    if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
+  
     int size, rank;
 
     MPI_Init(&argc, &argv);
@@ -25,42 +28,20 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
-    /* create a type for struct car */
-    const int nitems=2;
-    int          blocklengths[2] = {1,1};
-    MPI_Datatype types[2] = {MPI_INT, MPI_INT};
-    MPI_Datatype mpi_car_type;
-    MPI_Aint     offsets[2];
-
-    offsets[0] = offsetof(car, shifts);
-    offsets[1] = offsetof(car, topSpeed);
-
-    MPI_Type_create_struct(nitems, blocklengths, offsets, types, &mpi_car_type);
-    MPI_Type_commit(&mpi_car_type);
-
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    Scene scene("");
+
     if (rank == 0) {
-        car send;
-        send.shifts = 4;
-        send.topSpeed = 100;
-
-        const int dest = 1;
-        MPI_Send(&send,   1, mpi_car_type, dest, tag, MPI_COMM_WORLD);
-
-        printf("Rank %d: sent structure car\n", rank);
+        RayTracer::master(size, rank, scene);
+        if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}   
+        time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+        cout << "Execution Time: " << time << endl;
     }
-    if (rank == 1) {
-        MPI_Status status;
-        const int src=0;
-
-        car recv;
-
-        MPI_Recv(&recv,   1, mpi_car_type, src, tag, MPI_COMM_WORLD, &status);
-        printf("Rank %d: Received: shifts = %d topSpeed = %d\n", rank,
-                 recv.shifts, recv.topSpeed);
+    else {
+        RayTracer::worker(rank, scene);
     }
 
-    MPI_Type_free(&mpi_car_type);
     MPI_Finalize();
 
     return 0;

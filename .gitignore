@@ -2,3 +2,4 @@
 *.ppm
 build
 test
+.DS_Store
