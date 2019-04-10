@@ -163,7 +163,7 @@ std::vector<std::vector<Vector3> > RayTracer::Render(const std::vector<Object*> 
             //raydir = raydir * 0.5;
 
             //trace primary ray
-            image[y][x] = Trace(position, raydir, objects, 0);
+            image[y][x] = Trace(position, raydir, objects, 5);
         }
     }
     return image;

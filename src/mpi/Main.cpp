@@ -9,6 +9,7 @@
 #include "Resources.h"
 #include "Scene.h"
 #include "RayTracer.h"
+#include "Sphere.h"
 
 using namespace std;
 
@@ -32,14 +33,18 @@ int main(int argc, char **argv) {
 
     Scene scene("");
 
-    if (rank == 0) {
-        RayTracer::master(size, rank, scene);
-        if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}   
-        time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
-        cout << "Execution Time: " << time << endl;
-    }
-    else {
-        RayTracer::worker(rank, scene);
+    for(int i = 0; i < scene.cam.iterations; i++) {
+        if (rank == 0) {
+            RayTracer::master(size, rank, scene);
+            if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");}   
+            time = (stop.tv_sec - start.tv_sec)+ (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+            cout << "Execution Time: " << time << endl;
+        }
+        else {
+            RayTracer::worker(rank, scene);
+        }
+        scene.cam.position += scene.cam.movement;
+        ((Sphere*)(scene.Objects[2]))->center.x += 1;
     }
 
     MPI_Finalize();

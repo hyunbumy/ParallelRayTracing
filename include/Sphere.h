@@ -24,7 +24,7 @@ public:
     //[comment]
     // Compute a ray-sphere intersection using the geometric solution
     //[/comment]
-    bool intersect(const Vector3 &rayorig, const Vector3 &raydir, float &t0, float &t1) const
+    bool intersect(const Vector3 &rayorig, const Vector3 &raydir, float &t0, float &t1)
     {
         Vector3 l = center - rayorig;
         float tca = Vector3::Dot(l, raydir);

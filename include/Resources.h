@@ -247,17 +247,17 @@ public:
 		return temp;
 	}
 
-	// Lerp from A to B by f
-	static Vector3 Lerp(const Vector3& a, const Vector3& b, float f)
-	{
-		return Vector3(a + f * (b - a));
-	}
+	// // Lerp from A to B by f
+	// static Vector3 Lerp(const Vector3& a, const Vector3& b, float f)
+	// {
+	// 	return Vector3(a + f * (b - a));
+	// }
 	
-	// Reflect V about (normalized) N
-	static Vector3 Reflect(const Vector3& v, const Vector3& n)
-	{
-		return v - 2.0f * Vector3::Dot(v, n) * n;
-	}
+	// // Reflect V about (normalized) N
+	// static Vector3 Reflect(const Vector3& v, const Vector3& n)
+	// {
+	// 	return v - 2.0f * Vector3::Dot(v, n) * n;
+	// }
 
 	static Vector3 Transform(const Vector3& vec, const class Matrix4& mat, float w = 1.0f);
 	// This will transform the vector and renormalize the w component
