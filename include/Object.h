@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Resources.h"
+#include "accelerator.h"
 
 class Object
 {
@@ -19,7 +20,8 @@ public:
 
     virtual ~Object()
     { /* empty */ }
-    
+
     virtual bool intersect(const Vector3 &rayorig, const Vector3 &raydir, float &t0, float &t1) = 0;
     virtual Vector3 calculateHit(const Vector3 &rayorig) const = 0;
+    // virtual void constructBBOX(void) const = 0;
 };

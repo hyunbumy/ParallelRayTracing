@@ -26,6 +26,17 @@ Scene::Scene(std::string filename) {
     // light
     Objects.push_back(new Sphere(Vector3( -10,     20, 10),     3, Vector3(0.00, 0.00, 0.00), 0, 0.0, Vector3(3,3,3)));
 
+    // bounding volumes data structure
+    // running tally of the volumes, summed
+    /*
+    for object in objects:
+        compute bounding volume for object
+        store an objects bounding volume to itself!
+
+    */
+
+
+
     //cam = Camera(Vector3(10, 30, 15), Vector3(0.35, 1, 0), 40, 640, 480);
     //cam = Camera(Vector3(-10, 6, 30), Vector3(0, 0, 0), Vector3(0.5, 0, 0), 20, 30, 640, 480);
     //cam = Camera(Vector3(0, 0.1, 2), Vector3(0, 0, 0), Vector3(0, 0, 0), 20, 30, 640, 480);

@@ -9,12 +9,14 @@
 #include "Resources.h"
 #include "Object.h"
 #include "Triangle.h"
+#include "accelerator.h"
 
 class TriMesh : public Object
 {
 public:
     std::vector<Triangle> triangles;
     int intersectIndex = 0;
+    BBox<> bbox;
 
     TriMesh(
         const char *file,
@@ -59,7 +61,11 @@ public:
                     ss >> v1;
                     ss >> v2;
                     //std::cout << v0 << " " << v1 << " " << v2 << std::endl;
-                    triangles.push_back(Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp));
+                    Triangle temp = Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp);
+                    triangles.push_back(temp);
+                    this->bbox.extendBy(verticies[v0].x, verticies[v0].y, verticies[v0].z);
+                    this->bbox.extendBy(verticies[v1].x, verticies[v1].y, verticies[v1].z);
+                    this->bbox.extendBy(verticies[v2].x, verticies[v2].y, verticies[v2].z);
                 }
             } else if(test.find(".dae") != std::string::npos) {
                 uint32_t numVerticies;
