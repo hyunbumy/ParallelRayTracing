@@ -83,7 +83,7 @@ public:
                     verticies.push_back(temp);
                 }
 
-                                uint32_t numTriangles;
+                uint32_t numTriangles;
                 ss >> numTriangles;
 
                 //std::cout << "numTriangles: " << numTriangles << std::endl;
@@ -100,7 +100,11 @@ public:
                     ss >> garbage;
                     ss >> garbage;
                     //std::cout << v0 << " " << v1 << " " << v2 << std::endl;
-                    triangles.push_back(Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp));
+                    Triangle temp = Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp);
+                    triangles.push_back(temp);
+                    this->bbox.extendBy(verticies[v0].x, verticies[v0].y, verticies[v0].z);
+                    this->bbox.extendBy(verticies[v1].x, verticies[v1].y, verticies[v1].z);
+                    this->bbox.extendBy(verticies[v2].x, verticies[v2].y, verticies[v2].z);
                 }
                 std::cout << "finished parsing dae" << std::endl;
 
