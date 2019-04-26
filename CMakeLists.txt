@@ -15,7 +15,7 @@ find_package(MPI REQUIRED)
 
 include_directories(${MPI_INCLUDE_PATH})
 
-add_executable(rtMPI src/mpi/Main.cpp src/Resources.cpp src/mpi/RayTracer.cpp src/Output.cpp src/Scene.cpp src/Camera.cpp src/accelerator.cpp)
+add_executable(rtMPI src/mpi/Main.cpp src/Resources.cpp src/mpi/RayTracer.cpp src/Output.cpp src/Scene.cpp src/Camera.cpp)
 target_link_libraries(rtMPI ${MPI_LIBRARIES})
 
 if(MPI_COMPILE_FLAGS)
@@ -36,9 +36,9 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-g -O3 -Wall -MMD -MP -std=c++11")
+set(CMAKE_CXX_FLAGS "-g -O3 -Wall -MMD -MP  -std=c++11")
 
-add_executable(rtSerial src/serial/Main.cpp src/Resources.cpp src/serial/RayTracer.cpp src/Output.cpp src/Scene.cpp src/Camera.cpp src/Camera.cpp src/accelerator.cpp)
+add_executable(rtSerial src/serial/Main.cpp src/Resources.cpp src/serial/RayTracer.cpp src/Output.cpp src/Scene.cpp src/Camera.cpp src/Camera.cpp)
 target_link_libraries(rtMPI m)
 
 #------------------------------------------------------------

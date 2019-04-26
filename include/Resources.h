@@ -145,18 +145,6 @@ public:
 		z = inZ;
 	}
 
-	float &operator[] (int ind) {
-		if(ind == 0){
-			return this->x;
-		}
-		if(ind == 1){
-			return this->y;
-		}
-		if(ind == 2){
-			return this->z;
-		}
-	}
-
 	// Vector addition (a + b)
 	friend Vector3 operator+(const Vector3& a, const Vector3& b)
 	{
