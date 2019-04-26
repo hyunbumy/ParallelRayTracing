@@ -121,9 +121,11 @@ public:
         bool returnBool = false;
         Vec3f orig  = Vec3f(rayorig.x, rayorig.y,  rayorig.z);
         Vec3f dir  = Vec3f(raydir.x, raydir.y, raydir.z);
+        Vec3f invdir = 1 / dir;
         const Vec3b sign(dir.x < 0, dir.y < 0, dir.z < 0); 
         float l = kInfinity; 
-        if(this->bbox.intersect(orig, dir, sign, l)){
+        if(this->bbox.intersect(orig, invdir, sign, l)){
+            std::cout << "here" << std::endl;
             for(size_t i = 0; i < triangles.size(); i++) {
                 float temp0 = INFINITY, temp1 = INFINITY;
                 if(triangles[i].intersect(rayorig, raydir, temp0, temp1) && temp0 < t0) {
