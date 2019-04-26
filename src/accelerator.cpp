@@ -32,7 +32,7 @@ void normalize(Vec3<T>& vec)
 template<typename T> 
 bool BBox<T>::intersect(const Vec3<T>& orig, const Vec3<T>& invDir, const Vec3b& sign, float& tHit) const 
 {
-    numRayBBoxTests++;
+    
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
 
     tmin  = (bounds[sign[0]    ].x - orig.x) * invDir.x;

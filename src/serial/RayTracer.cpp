@@ -27,6 +27,9 @@
 #include <iostream>
 #include <cassert>
 
+
+
+
 #include "RayTracer.h"
 
 //[comment]

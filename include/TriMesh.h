@@ -119,16 +119,21 @@ public:
     bool intersect(const Vector3 &rayorig, const Vector3 &raydir, float &t0, float &t1)
     {
         bool returnBool = false;
-
-        for(size_t i = 0; i < triangles.size(); i++) {
-            float temp0 = INFINITY, temp1 = INFINITY;
-            if(triangles[i].intersect(rayorig, raydir, temp0, temp1) && temp0 < t0) {
-                returnBool = true;
-                t0 = temp0;
-                intersectIndex = i;
+        Vec3f orig  = Vec3f(rayorig.x, rayorig.y,  rayorig.z);
+        Vec3f dir  = Vec3f(raydir.x, raydir.y, raydir.z);
+        const Vec3b sign(dir.x < 0, dir.y < 0, dir.z < 0); 
+        float l = kInfinity; 
+        if(this->bbox.intersect(orig, dir, sign, l)){
+            for(size_t i = 0; i < triangles.size(); i++) {
+                float temp0 = INFINITY, temp1 = INFINITY;
+                if(triangles[i].intersect(rayorig, raydir, temp0, temp1) && temp0 < t0) {
+                    returnBool = true;
+                    t0 = temp0;
+                    intersectIndex = i;
+                }
             }
-        }
         //std::cout << "intersect with trimesh? " << returnBool << std::endl;
+        }
 
         return returnBool;
     }
