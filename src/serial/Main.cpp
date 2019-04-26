@@ -17,7 +17,13 @@ int main(int argc, char **argv)
     if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
     //srand48(13);
 
-    Scene scene("");
+    int sceneNumber = 1;
+
+    if(argc != 1) {
+        sceneNumber = std::stoi(argv[1]);
+    }
+
+    Scene scene("", sceneNumber);
 
     // std::vector<Object*> objects;
     // position, radius, surface color, reflectivity, transparency, emission color

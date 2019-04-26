@@ -1,8 +1,8 @@
-cmake_minimum_required (VERSION 3.02)
+cmake_minimum_required (VERSION 2.6)
 project (RayTracing)
 
 # Uncomment for whichever compiler you use
-# set(CMAKE_CC_COMPILER "g++-8")
+
 # set(CMAKE_CC_COMPILER "g++")
 
 include_directories($(RayTracing_SOURCE_DIR)include)
@@ -45,8 +45,8 @@ target_link_libraries(rtMPI m)
 #---------------Create Binary for OpenMP---------------------
 #------------------------------------------------------------
 
-# set(CMAKE_CXX_FLAGS "-g -O3 -Wall -MMD -MP -fopenmp -std=c++11")
-# add_executable(rtOpenMP src/openmp/Main.cpp src/Resources.cpp src/openmp/RayTracer.cpp src/Output.cpp)
+set(CMAKE_CXX_FLAGS "-g -O3 -Wall -MMD -MP -fopenmp -std=c++11")
+add_executable(rtOpenMP src/openmp/Main.cpp src/Resources.cpp src/openmp/RayTracer.cpp src/Output.cpp src/Scene.cpp src/Camera.cpp)
 
 # Need to compile using nvcc
 # add_executable(rtCuda src/cuda/Main.cpp src/cuda/cudaRT.cpp src/Math.cpp src/Output.cpp)

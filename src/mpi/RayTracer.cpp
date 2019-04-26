@@ -37,7 +37,7 @@ using namespace std;
 //[comment]
 // This variable controls the maximum recursion depth
 //[/comment]
-#define MAX_RAY_DEPTH 5
+
 
 //[comment]
 // This is the main trace function. It takes a ray as argument (defined by its origin
@@ -179,6 +179,7 @@ void RayTracer::master(int &size, int &rank, Scene &scene) {
     int recv_row;
     int done = -1;
     while(curr_row < height) {
+        //cout << "sending row: " << curr_row << endl;
         //MPI_REC
         MPI_Recv(&recv_row, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         //printf("master received row %d\n", recv_row);
@@ -218,10 +219,15 @@ void RayTracer::worker(int &rank, Scene &scene) {
     float angle = tan(M_PI * 0.5 * fov / 180.);
 
     vector<Vector3> row_data = vector<Vector3>(scene.cam.width);
+    
+    struct timespec start, stop; 
+    double time;
 
     int row = 0;
     while(true) {
         MPI_Recv(&row, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+        if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
         //printf("Rank: %d, computing row: %d\n", rank, row);
         if(row == -1) break;
         for(int i = 0; i < scene.cam.width; i++) {
@@ -237,11 +243,19 @@ void RayTracer::worker(int &rank, Scene &scene) {
             //trace primary ray
             row_data[i] = Trace(scene.cam.position, raydir, scene.Objects, 0);
         }
+
+        if( clock_gettime( CLOCK_REALTIME, &stop) == -1 ) { perror("clock gettime");} 
+        time = time + (stop.tv_sec - start.tv_sec) + (double)(stop.tv_nsec - start.tv_nsec)/1e9;
+
         //printf("sending row num\n");
         MPI_Send(&row, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
         //printf("sending row data\n");
         MPI_Send(&row_data[0], width, mpi_vector3, 0, 1, MPI_COMM_WORLD);
+
+        
+        
     }
+    cout << "Thread " << rank << " Execution Time: " << time << endl;
     //printf("worker exiting\n");
     return;
 }

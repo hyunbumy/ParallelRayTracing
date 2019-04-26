@@ -33,7 +33,6 @@
 //[comment]
 // This variable controls the maximum recursion depth
 //[/comment]
-#define MAX_RAY_DEPTH 5
 
 //[comment]
 // This is the main trace function. It takes a ray as argument (defined by its origin
@@ -67,6 +66,7 @@ Vector3 RayTracer::Trace(
     }
     // if there's no intersection return black or background color
     if (!object) return Vector3(2, 2, 2);
+    
     Vector3 surfaceColor = Vector3::Zero; // color of the ray/surfaceof the object intersected by the ray
     Vector3 phit = rayorig + raydir * tnear; // point of intersection
     Vector3 nhit = object->calculateHit(phit); // normal at the intersection point
@@ -102,9 +102,10 @@ Vector3 RayTracer::Trace(
             refraction = Trace(phit - nhit * bias, refrdir, objects, depth + 1);
         }
         // the result is a mix of reflection and refraction (if the sphere is transparent)
-        surfaceColor = (
-            reflection * fresneleffect +
-            refraction * (1 - fresneleffect) * object->transparency) * object->surfaceColor;
+        surfaceColor = 
+            (reflection * fresneleffect * object->surfaceColor) +
+            (refraction * (1 - fresneleffect) * object->transparency * object->surfaceColor);
+        return surfaceColor;
     }
     else {
         // it's a diffuse object, no need to raytrace any further
@@ -127,9 +128,8 @@ Vector3 RayTracer::Trace(
                 std::max(float(0), Vector3::Dot(nhit, lightDirection)) * objects[i]->emissionColor;
             }
         }
+        return surfaceColor + object->emissionColor;
     }
-    
-    return surfaceColor + object->emissionColor;
 }
 
 //[comment]
@@ -139,29 +139,73 @@ Vector3 RayTracer::Trace(
 //[/comment]
 std::vector<std::vector<Vector3> > RayTracer::Render(const std::vector<Object*> &objects)
 {
-    unsigned width = 3840, height = 2160;
+    //unsigned width = 3280, height = 2160; 
+    unsigned width = 640, height = 480;
     std::vector<std::vector<Vector3> > image = std::vector<std::vector<Vector3> >(
         height, std::vector<Vector3>(width)
     );
     float invWidth = 1 / float(width), invHeight = 1 / float(height);
-    float fov = 30, aspectratio = width / float(height);
+    float fov = 50, aspectratio = width / float(height);
     float angle = tan(M_PI * 0.5 * fov / 180.);
-    // Trace rays
 
-    omp_set_num_threads(8);
-    #pragma omp parallel for
+    Vector3 position(10, 30, 15); // 10, 30, 15
+    Vector3 direction(0.35, 1, 0); // 0.35, 1, 0
+    // Trace rays
     for (unsigned y = 0; y < height; ++y) {
         for (unsigned x = 0; x < width; ++x) {
-
             //create primary ray
             float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectratio;
             float yy = (1 - 2 * ((y + 0.5) * invHeight)) * angle;
-            Vector3 raydir(xx, yy, -1);
+            float zz = -1;
+            Vector3 raydir(xx, yy, zz);
+            raydir = raydir-direction;
             raydir.Normalize();
+            //raydir = raydir * 0.5;
 
             //trace primary ray
-            image[y][x] = Trace(Vector3::Zero, raydir, objects, 0);
+            image[y][x] = Trace(position, raydir, objects, 5);
         }
     }
+    return image;
+}
+
+std::vector<std::vector<Vector3> > RayTracer::Render(Scene& scene) {
+//unsigned width = 3280, height = 2160; 
+    unsigned width = scene.cam.width, height = scene.cam.height;
+    std::vector<std::vector<Vector3> > image = std::vector<std::vector<Vector3> >(
+        height, std::vector<Vector3>(width)
+    );
+    float invWidth = 1 / float(width), invHeight = 1 / float(height);
+    float fov = scene.cam.fov, aspectratio = width / float(height);
+    float angle = tan(M_PI * 0.5 * fov / 180.);
+
+    // Trace rays
+    omp_set_num_threads(8);
+
+    #pragma omp parallel 
+    {
+        double wtime = omp_get_wtime();
+
+        #pragma omp parallel for
+        for (unsigned y = 0; y < height; ++y) {
+            for (unsigned x = 0; x < width; ++x) {
+                //create primary ray
+                float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectratio;
+                float yy = (1 - 2 * ((y + 0.5) * invHeight)) * angle;
+                float zz = -1;
+                Vector3 raydir(xx, yy, zz);
+                raydir = raydir - scene.cam.direction;
+                raydir.Normalize();
+                //raydir = raydir * 0.5;
+
+                //trace primary ray
+                image[y][x] = Trace(scene.cam.position, raydir, scene.Objects, 0);
+            }
+        }
+
+        wtime = omp_get_wtime() - wtime;
+        printf( "Time taken by thread %d is %f\n", omp_get_thread_num(), wtime );
+    }
+    
     return image;
 }

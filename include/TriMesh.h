@@ -61,6 +61,7 @@ public:
                     //std::cout << v0 << " " << v1 << " " << v2 << std::endl;
                     triangles.push_back(Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp));
                 }
+                std::cout << "finished parsing geo" << std::endl;
             } else if(test.find(".dae") != std::string::npos) {
                 uint32_t numVerticies;
                 ss >> numVerticies;

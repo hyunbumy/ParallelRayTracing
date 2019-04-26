@@ -32,7 +32,6 @@
 //[comment]
 // This variable controls the maximum recursion depth
 //[/comment]
-#define MAX_RAY_DEPTH 5
 
 //[comment]
 // This is the main trace function. It takes a ray as argument (defined by its origin
@@ -181,6 +180,7 @@ std::vector<std::vector<Vector3> > RayTracer::Render(Scene& scene) {
 
     // Trace rays
     for (unsigned y = 0; y < height; ++y) {
+        //std::cout << "starting row: " << y << std::endl;
         for (unsigned x = 0; x < width; ++x) {
             //create primary ray
             float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectratio;

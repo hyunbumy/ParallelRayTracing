@@ -12,6 +12,6 @@ class Scene{
 public:
     Camera cam;
     std::vector<Object*> Objects;
-    Scene(std::string filename);
+    Scene(std::string filename, int select);
     ~Scene();
 };
