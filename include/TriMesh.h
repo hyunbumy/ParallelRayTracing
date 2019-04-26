@@ -67,6 +67,7 @@ public:
                     this->bbox.extendBy(verticies[v1].x, verticies[v1].y, verticies[v1].z);
                     this->bbox.extendBy(verticies[v2].x, verticies[v2].y, verticies[v2].z);
                 }
+                std::cout << "finished parsing geo" << std::endl;
             } else if(test.find(".dae") != std::string::npos) {
                 uint32_t numVerticies;
                 ss >> numVerticies;
@@ -125,7 +126,7 @@ public:
         const Vec3b sign(dir.x < 0, dir.y < 0, dir.z < 0); 
         float l = kInfinity; 
         if(this->bbox.intersect(orig, invdir, sign, l)){
-            std::cout << "here" << std::endl;
+            // std::cout << "here" << std::endl;
             for(size_t i = 0; i < triangles.size(); i++) {
                 float temp0 = INFINITY, temp1 = INFINITY;
                 if(triangles[i].intersect(rayorig, raydir, temp0, temp1) && temp0 < t0) {

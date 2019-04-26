@@ -5,6 +5,7 @@
 #include <math.h>
 #include <vector>
 #include <iostream>
+#include <string>
 
 #include "Resources.h"
 #include "Scene.h"
@@ -30,8 +31,13 @@ int main(int argc, char **argv) {
     }
 
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int sceneNumber = 1;
 
-    Scene scene("");
+    if(argc != 1) {
+        sceneNumber = std::stoi(argv[1]);
+    }
+
+    Scene scene("", sceneNumber);
 
     for(int i = 0; i < scene.cam.iterations; i++) {
         if (rank == 0) {
@@ -44,7 +50,6 @@ int main(int argc, char **argv) {
             RayTracer::worker(rank, scene);
         }
         scene.cam.position += scene.cam.movement;
-        ((Sphere*)(scene.Objects[2]))->center.x += 1;
     }
 
     MPI_Finalize();

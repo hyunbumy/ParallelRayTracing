@@ -6,6 +6,8 @@
 #include "Resources.h"
 #include "Scene.h"
 
+#define MAX_RAY_DEPTH 20
+
 class RayTracer
 {
 public:
