@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <vector>
-#include <iostream>
 #include "Resources.h"
 #include "Object.h"
 
