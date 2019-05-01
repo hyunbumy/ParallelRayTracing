@@ -1,18 +1,17 @@
 #include "CudaSphere.h"
 #include "helper_math.h"
 
+__device__
 CudaSphere::CudaSphere(const float3& c, const float& r, const float3& sc,
                        const float& refl, const float& transp, const float3& ec)
-    :surfaceColor(sc)
-    ,reflection(refl)
-    ,transparency(transp)
-    ,emissionColor(ec)
+    :CudaObject(sc, refl, transp, ec)
     ,center(c)
     ,radius(r)
     ,radius2(r*r)
 {   }
 
-bool CudaSphere::Intersect(float3& rayorig, float3& raydir,
+__device__
+bool CudaSphere::Intersect(const float3& rayorig, const float3& raydir,
                            float& t0, float& t1)
 {
     float3 l = center - rayorig;
@@ -25,4 +24,10 @@ bool CudaSphere::Intersect(float3& rayorig, float3& raydir,
     t1 = tca + thc;
     
     return true;
+}
+
+__device__
+float3 CudaSphere::CalculateHit(const float3 &rayorig) const
+{
+    return rayorig - this->center;
 }

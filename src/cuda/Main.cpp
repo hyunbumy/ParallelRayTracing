@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "CudaRT.h"
-#include "CudaRTIter.h"
+// #include "CudaRTIter.h"
 
 // Output as a ppm format
 void OutputPPM(float3* image, unsigned width, unsigned height)

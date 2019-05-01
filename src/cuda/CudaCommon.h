@@ -2,10 +2,10 @@
 
 #include <iostream>
 
-#include "CudaSphere.h"
+#include "CudaObject.h"
 #include "helper_math.h"
 
-#define MAX_RAY_DEPTH 5
+#define MAX_RAY_DEPTH 4
 
 // limited version of checkCudaErrors from helper_cuda.h in CUDA examples
 #define checkCudaErrors(val) check_cuda( (val), #val, __FILE__, __LINE__ )
@@ -22,18 +22,18 @@ __inline__ void check_cuda(cudaError_t result, char const *const func,
 }
 
 __device__
-__inline__ static CudaSphere* GetClosestObject(float3& rayorig, float3& raydir,
+__inline__ static CudaObject* GetClosestObject(float3& rayorig, float3& raydir,
                                                float& tnear,
-                                               CudaSphere* objects, int objSize)
+                                               CudaObject** objects, int objSize)
 {
-    CudaSphere* object = nullptr;
+    CudaObject* object = nullptr;
     for (unsigned i = 0; i < objSize; ++i) {
         float t0 = INFINITY, t1 = INFINITY;
-        if (objects[i].Intersect(rayorig, raydir, t0, t1)) {
+        if (objects[i]->Intersect(rayorig, raydir, t0, t1)) {
             if (t0 < 0) t0 = t1;
             if (t0 < tnear) {
                 tnear = t0;
-                object = &objects[i];
+                object = objects[i];
             }
         }
     }

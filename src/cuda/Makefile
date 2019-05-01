@@ -13,17 +13,18 @@ INCLUDES = -I. -I$(CUDA_INSTALL_PATH)/include
 
 # Common flags
 COMMONFLAGS += $(INCLUDES)
-LINKFLAGS += -arch=sm_30
+LINKFLAGS += -arch=sm_30 -std=c++11
 ifeq ($(HOSTNAME), hpc-login3)
-	LINKFLAGS = -arch=sm_60
+	LINKFLAGS = -arch=sm_60 -std=c++11
 endif
-NVCCFLAGS += -std=c++11 -dc $(COMMONFLAGS) $(LINKFLAGS)
-CXXFLAGS += $(COMMONFLAGS)
+NVCCFLAGS += -dc $(COMMONFLAGS) $(LINKFLAGS)
+CXXFLAGS += -std=c++11 $(COMMONFLAGS)
 CFLAGS += $(COMMONFLAGS)
 
 LIB_CUDA := -L$(CUDA_INSTALL_PATH)/lib64 -lcudart
 BUILDDIR = build
-OBJS = $(BUILDDIR)/CudaRT.cu.o $(BUILDDIR)/CudaSphere.cu.o $(BUILDDIR)/Main.cpp.o $(BUILDDIR)/CudaRTIter.cu.o
+OBJS = $(BUILDDIR)/CudaRT.cu.o $(BUILDDIR)/CudaSphere.cu.o $(BUILDDIR)/CudaTriangle.cu.o \
+	   $(BUILDDIR)/Main.cpp.o $(BUILDDIR)/CudaRTIter.cu.o
 TARGET = main
 LINKLINE = $(LINK) $(LINKFLAGS) -o $(BUILDDIR)/$(TARGET) $(OBJS) $(LIB_CUDA)
 
