@@ -1,25 +1,3 @@
-// [header]
-// A very basic raytracer example.
-// [/header]
-// [compile]
-// c++ -o raytracer -O3 -Wall raytracer.cpp
-// [/compile]
-// [ignore]
-// Copyright (C) 2012  www.scratchapixel.com
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-// [/ignore]
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -34,21 +12,6 @@
 
 using namespace std;
 
-//[comment]
-// This variable controls the maximum recursion depth
-//[/comment]
-
-
-//[comment]
-// This is the main trace function. It takes a ray as argument (defined by its origin
-// and direction). We test if this ray intersects any of the geometry in the scene.
-// If the ray intersects an object, we compute the intersection point, the normal
-// at the intersection point, and shade this point using this information.
-// Shading depends on the surface property (is it transparent, reflective, diffuse).
-// The function returns a color for the ray. If the ray intersects an object that
-// is the color of the object at the intersection point, otherwise it returns
-// the background color.
-//[/comment]
 Vector3 RayTracer::Trace(
     const Vector3 &rayorig,
     const Vector3 &raydir,
@@ -153,16 +116,8 @@ MPI_Datatype getDataTransferType() {
 }
 
 void RayTracer::master(int &size, int &rank, Scene &scene) {
-    //printf("master\n");
     MPI_Status status;
     MPI_Datatype mpi_vector3 = getDataTransferType();
-    // create holding vector
-    // distribute initial work to workers
-    // loop and retrieve until work done
-    //      receive row number
-    //      receive data
-    //      send more work
-    // send termination to workers
 
     unsigned width = scene.cam.width, height = scene.cam.height;
     std::vector<std::vector<Vector3> > image = std::vector<std::vector<Vector3> >(
@@ -182,7 +137,6 @@ void RayTracer::master(int &size, int &rank, Scene &scene) {
         //cout << "sending row: " << curr_row << endl;
         //MPI_REC
         MPI_Recv(&recv_row, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        //printf("master received row %d\n", recv_row);
 
         //MPI_REC
         MPI_Recv(&image[recv_row][0], width, mpi_vector3, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -228,7 +182,7 @@ void RayTracer::worker(int &rank, Scene &scene) {
         MPI_Recv(&row, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
         if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
-        //printf("Rank: %d, computing row: %d\n", rank, row);
+        
         if(row == -1) break;
         for(int i = 0; i < scene.cam.width; i++) {
 

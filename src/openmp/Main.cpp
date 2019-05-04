@@ -15,7 +15,6 @@ int main(int argc, char **argv)
     double time;
 
     if( clock_gettime(CLOCK_REALTIME, &start) == -1) { perror("clock gettime");}
-    //srand48(13);
 
     int sceneNumber = 1;
 

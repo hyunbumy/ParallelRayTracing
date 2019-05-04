@@ -1,25 +1,3 @@
-// [header]
-// A very basic raytracer example.
-// [/header]
-// [compile]
-// c++ -o raytracer -O3 -Wall raytracer.cpp
-// [/compile]
-// [ignore]
-// Copyright (C) 2012  www.scratchapixel.com
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-// [/ignore]
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -29,20 +7,6 @@
 
 #include "RayTracer.h"
 
-//[comment]
-// This variable controls the maximum recursion depth
-//[/comment]
-
-//[comment]
-// This is the main trace function. It takes a ray as argument (defined by its origin
-// and direction). We test if this ray intersects any of the geometry in the scene.
-// If the ray intersects an object, we compute the intersection point, the normal
-// at the intersection point, and shade this point using this information.
-// Shading depends on the surface property (is it transparent, reflective, diffuse).
-// The function returns a color for the ray. If the ray intersects an object that
-// is the color of the object at the intersection point, otherwise it returns
-// the background color.
-//[/comment]
 Vector3 RayTracer::Trace(
     const Vector3 &rayorig,
     const Vector3 &raydir,
@@ -131,11 +95,6 @@ Vector3 RayTracer::Trace(
     }
 }
 
-//[comment]
-// Main rendering function. We compute a camera ray for each pixel of the image
-// trace it and return a color. If the ray hits a sphere, we return the color of the
-// sphere at the intersection point, else we return the background color.
-//[/comment]
 std::vector<std::vector<Vector3> > RayTracer::Render(const std::vector<Object*> &objects)
 {
     //unsigned width = 3280, height = 2160; 
