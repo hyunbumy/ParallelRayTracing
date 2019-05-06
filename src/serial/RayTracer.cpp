@@ -5,6 +5,9 @@
 #include <iostream>
 #include <cassert>
 
+
+
+
 #include "RayTracer.h"
 
 Vector3 RayTracer::Trace(

@@ -11,6 +11,8 @@
 #include "Triangle.h"
 #include "TriMesh.h"
 
+#define BVH false
+
 using namespace std;
 
 Scene::Scene(std::string filename, int select) {
@@ -27,11 +29,11 @@ Scene::Scene(std::string filename, int select) {
     } else if(select == 2) { // 5 cows
         //Objects.push_back(new Sphere(Vector3( 0.0, -10004, -20), 10000, Vector3(0.20, 0.20, 0.20), 0, 0));
 
-        Objects.push_back(new TriMesh("../mesh_files/cow.geo", Vector3(1.00, 0.32, 0.36), 1, 0));
-        Objects.push_back(new TriMesh("../mesh_files/cow2.geo", Vector3(1.00, 0.32, 0.36), 1, 0));
-        Objects.push_back(new TriMesh("../mesh_files/cow3.geo", Vector3(1.00, 0.32, 0.36), 1, 0));
-        Objects.push_back(new TriMesh("../mesh_files/cow4.geo", Vector3(1.00, 0.32, 0.36), 1, 0));
-        Objects.push_back(new TriMesh("../mesh_files/cow5.geo", Vector3(1.00, 0.32, 0.36), 1, 0));
+        Objects.push_back(new TriMesh("../mesh_files/cow.geo", Vector3(1.00, 0.32, 0.36), 1, 0, BVH) );
+        Objects.push_back(new TriMesh("../mesh_files/cow2.geo", Vector3(1.00, 0.32, 0.36), 1, 0, BVH) );
+        Objects.push_back(new TriMesh("../mesh_files/cow3.geo", Vector3(1.00, 0.32, 0.36), 1, 0, BVH) );
+        Objects.push_back(new TriMesh("../mesh_files/cow4.geo", Vector3(1.00, 0.32, 0.36), 1, 0, BVH) );
+        Objects.push_back(new TriMesh("../mesh_files/cow5.geo", Vector3(1.00, 0.32, 0.36), 1, 0, BVH) );
 
         Objects.push_back(new Sphere(Vector3( 0.0, 0, 0), 2, Vector3(0.00, 0.00, 0.00), 0, 0.0, Vector3(3,3,3)));
 
@@ -39,7 +41,7 @@ Scene::Scene(std::string filename, int select) {
 
     } else if(select == 3) { // banana
         //Objects.push_back(new Sphere(Vector3( 0.0, -10004, -20), 10000, Vector3(0.20, 0.20, 0.20), 0, 0.0));
-        Objects.push_back(new TriMesh("../mesh_files/banana.dae", Vector3(1, 1, 0.25), 1, 0));
+        Objects.push_back(new TriMesh("../mesh_files/banana.dae", Vector3(1, 1, 0.25), 1, 0, BVH));
         Objects.push_back(new Sphere(Vector3( 0,     0.5, 0.3),     3 , Vector3(0.00, 0.00, 0.00), 0, 0.0, Vector3(7,7,7)));
                                 //0.8
         cam = Camera(Vector3(-0.01, 0.20, 0.6), Vector3(0, 0, 0), Vector3(0, 0, 0), 1, 30, 3480, 2160);

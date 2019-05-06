@@ -9,20 +9,28 @@
 #include "Resources.h"
 #include "Object.h"
 #include "Triangle.h"
+#include "accelerator.h"
 
 class TriMesh : public Object
 {
 public:
     std::vector<Triangle> triangles;
     int intersectIndex = 0;
+    BBox<> bbox;
+    bool BVH;
 
     TriMesh(
         const char *file,
         const Vector3 &sc,
         const float &refl = 0,
         const float &transp = 0,
-        const Vector3 &ec = Vector3::Zero) : Object(sc, refl, transp, ec)
+        const bool BVH = true,
+        const Vector3 &ec = Vector3::Zero
+        )
+	 : Object(sc, refl, transp, ec)
     {
+        this->BVH = BVH;
+        std::cout << this->BVH << std::endl;
         std::ifstream ifs;
         try {
 
@@ -59,7 +67,13 @@ public:
                     ss >> v1;
                     ss >> v2;
                     //std::cout << v0 << " " << v1 << " " << v2 << std::endl;
-                    triangles.push_back(Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp));
+                    Triangle temp = Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp);
+                    triangles.push_back(temp);
+                    if(BVH){
+                        this->bbox.extendBy(verticies[v0].x, verticies[v0].y, verticies[v0].z);
+                        this->bbox.extendBy(verticies[v1].x, verticies[v1].y, verticies[v1].z);
+                        this->bbox.extendBy(verticies[v2].x, verticies[v2].y, verticies[v2].z);
+                    }
                 }
                 std::cout << "finished parsing geo" << std::endl;
             } else if(test.find(".dae") != std::string::npos) {
@@ -78,7 +92,7 @@ public:
                     verticies.push_back(temp);
                 }
 
-                                uint32_t numTriangles;
+                uint32_t numTriangles;
                 ss >> numTriangles;
 
                 //std::cout << "numTriangles: " << numTriangles << std::endl;
@@ -95,7 +109,13 @@ public:
                     ss >> garbage;
                     ss >> garbage;
                     //std::cout << v0 << " " << v1 << " " << v2 << std::endl;
-                    triangles.push_back(Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp));
+                    Triangle temp = Triangle(verticies[v0], verticies[v1], verticies[v2], sc, refl, transp);
+                    triangles.push_back(temp);
+                    if(BVH){
+                        this->bbox.extendBy(verticies[v0].x, verticies[v0].y, verticies[v0].z);
+                        this->bbox.extendBy(verticies[v1].x, verticies[v1].y, verticies[v1].z);
+                        this->bbox.extendBy(verticies[v2].x, verticies[v2].y, verticies[v2].z);
+                    }
                 }
                 std::cout << "finished parsing dae" << std::endl;
 
@@ -110,16 +130,34 @@ public:
     bool intersect(const Vector3 &rayorig, const Vector3 &raydir, float &t0, float &t1)
     {
         bool returnBool = false;
-
-        for(size_t i = 0; i < triangles.size(); i++) {
-            float temp0 = INFINITY, temp1 = INFINITY;
-            if(triangles[i].intersect(rayorig, raydir, temp0, temp1) && temp0 < t0) {
-                returnBool = true;
-                t0 = temp0;
-                intersectIndex = i;
+        Vec3f orig  = Vec3f(rayorig.x, rayorig.y,  rayorig.z);
+        Vec3f dir  = Vec3f(raydir.x, raydir.y, raydir.z);
+        Vec3f invdir = 1 / dir;
+        const Vec3b sign(dir.x < 0, dir.y < 0, dir.z < 0); 
+        float l = kInfinity;
+        if(this->BVH){ 
+            if(this->bbox.intersect(orig, invdir, sign, l)){
+                // std::cout << "here" << std::endl;
+                for(size_t i = 0; i < triangles.size(); i++) {
+                    float temp0 = INFINITY, temp1 = INFINITY;
+                    if(triangles[i].intersect(rayorig, raydir, temp0, temp1) && temp0 < t0) {
+                        returnBool = true;
+                        t0 = temp0;
+                        intersectIndex = i;
+                    }
+                }
+            //std::cout << "intersect with trimesh? " << returnBool << std::endl;
+            }
+        } else{
+            for(size_t i = 0; i < triangles.size(); i++) {
+                float temp0 = INFINITY, temp1 = INFINITY;
+                if(triangles[i].intersect(rayorig, raydir, temp0, temp1) && temp0 < t0) {
+                    returnBool = true;
+                    t0 = temp0;
+                    intersectIndex = i;
+                }
             }
         }
-        //std::cout << "intersect with trimesh? " << returnBool << std::endl;
 
         return returnBool;
     }
